@@ -1,0 +1,59 @@
+<div class="row">
+  <% for post in @posts %>
+    <div class="col-sm-6 col-md-3">
+      <h4>
+        <%# find user who created post %>
+        <% user = User.find_by({ "id" => post["user_id"] }) %>
+        <%# handle any potential bad data where the post is missing a user %>
+        <% if user %>
+          <%= user["first_name"] %>
+        <% else %>
+          anonymous
+        <% end %>
+      </h4>
+      <%# conditionally display attached file if post.uploaded_image.attached? %>
+        <%# use url_for(post.uploaded_image) as attached file's url %>
+      <%# otherwise display original image url from database column %>
+        <img src="<%= post["image"] %>" class="img-fluid">
+      <%# end %>
+
+      <div class="row">
+        <!-- Likes -->
+        <div class="col">
+          <% if session["user_id"] == nil %>
+            <%# remove like/unlike functionality if no logged-in user %>
+            <i class="bi bi-heart text-danger"></i>
+            <%= Like.where({ "post_id" => post["id"] }).count %>
+          <% else %>
+            <% like = Like.find_by({ "post_id" => post["id"], "user_id" => session["user_id"] }) %>
+            <% if like == nil %>
+              <%# create new like if not yet liked by logged-in user %>
+              <form action="/likes" method="post">
+                <input type="hidden" name="post_id" value="<%= post["id"] %>">
+                <button class="btn p-0">
+                  <i class="bi bi-heart text-danger"></i>
+                </button>
+                <%= Like.where({ "post_id" => post["id"] }).count %>
+              </form>
+            <% else %>
+              <%# delete existing like if already liked by logged-in user %>
+              <form action="/likes/<%= like["id"] %>" method="post">
+                <input type="hidden" name="_method" value="delete">
+                <button class="btn p-0">
+                  <i class="bi bi-heart-fill text-danger"></i>
+                </button>
+                <%= Like.where({ "post_id" => post["id"] }).count %>
+              </form>
+            <% end %>
+          <% end %>
+        </div>
+
+        <div class="col text-end">
+          <div class="small fst-italic"><%= post["created_at"].strftime("%-m/%d/%y at %-I:%M %p") %></div>
+        </div>
+      </div>
+
+      <p><%= post["body"] %></p>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,7 @@
+image:
+  file: .gitpod.Dockerfile
+tasks:
+  - init: bundle install && rails db:setup && rails runner scripts/create_data.rb
+vscode:
+  extensions:
+    - vortizhe.simple-ruby-erb
